@@ -1,0 +1,39 @@
+Question: Create a new deployment named cka-deploy using the image nginx:alpine with replicas 1 and map storage to the existing persistent volume claim Expose this deployment as an internal Kubernetes service named cka-service on port 8080 and container port Demonstrate that the service is working
+Solution:
+kubectl get pv #persistence volumes present
+kubectl get pvc #persistence volume claim present. Check if its is bound to PV
+kubectl create deployment cka-deploy --image=nginx:alpine --dry-run=client -o yaml > cka-q16-deploy.yaml #Create deployment manifest
+vi cka-q16-deploy.yaml
+-------------------------------------------------------------------------------------------------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cka-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cka-deploy
+  template:
+    metadata:
+      labels:
+        app: cka-deploy
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: cka-q16-vol
+          mountPath: /cka/data
+      volumes:
+      - name: cka-q16-vol
+        persistentVolumeClaim:
+          claimName: cka-pvc
+--------------------------------------------------------------------------------------------------------------------------------------------------
+kubectl apply -f cka-q16-deploy.yaml
+kubectl expose deployment cka-deploy --name=cka-service --port=8080 --target-port=80
+kubectl run test --image=busybox -- sleep 3600 #run test pod for testing the service
+kubectl exec -it test -- sh    #opens interactive shell for pod test
+wget -O- cka-service:8080 #test inside the pod
