@@ -1,0 +1,17 @@
+Q. Create a yaml file called nginx-deploy.yaml for a deployment of three replicas of nginx, listening on the container's port 80. 
+They should have the labels role=webserver and app=nginx. The deployment should be named nginx-deploy.
+Expose the deployment with a load balancer and use a curl statement on the IP address of the load balancer 
+to export the output to a file titled output.txt.
+
+
+Solution:
+
+sudo kubectl run nginx-deploy --labels="role=webserver,app=nginx" --image=nginx --replicas=3 --port=80 -o yaml > nginx-deployment.yaml
+
+### expose the deployment with a loadbalancer type, call it nginx-service
+
+kubectl expose deployment nginx-deploy --type=LoadBalancer --name=nginx-service
+
+### use a curl statement that connects to the IP endpoint of the nginx-service and save the output to a file called output.txt
+
+curl IP > output.txt
