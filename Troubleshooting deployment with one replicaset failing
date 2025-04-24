@@ -1,0 +1,33 @@
+Question:
+Your cluster has a failed deployment named backend-api with multiple pods. Troubleshoot the deployment so that all pods are in a running state. Do not make adjustments to the resource limits defined on the deployment pods.
+
+Solution
+
+kubectl get deploy
+
+NAME          READY   UP-TO-DATE   AVAILABLE   AGE
+backend-api   2/3     2            2           3m48s
+
+#one pod is failing
+
+kubectl describe replicasets <failed pod>
+-------------------------------------------------------------------------------------------------------------------------------
+Warning  FailedCreate  Error creating: pods "backend-api-7977bfdbd5-hpcjw" is forbidden: exceeded quota: cpu-mem-quota, 
+requested: requests.memory=128Mi, used: requests.memory=256Mi, limited: requests.memory=300Mi
+---------------------------------------------------------------------------------------------------------------------------------
+#need to decrease resource request specs
+
+kubectl edit deployment backend-api -n default
+---------------------------------------------------------------------------------------------------------------------------------
+resources:
+  requests:
+    cpu: "50m"   # Reduced from 100m to 50m
+    memory: "90Mi"   # Reduced from 128Mi to 90Mi (Fits within quota)
+  limits:
+    cpu: "150m"   
+    memory: "150Mi"
+----------------------------------------------------------------------------------------------------------------------------------
+
+kubectl delete rs backend-api-7977bfdbd5 -n default #delete old rs
+
+kubectl get pods -n default
