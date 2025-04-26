@@ -1,0 +1,10 @@
+Question:
+We have created a new deployment called nginx-deploy. Scale the deployment to 3 replicas. Has the number of replicas increased? Troubleshoot and fix the issue.
+
+Solution
+kubectl scale deploy nginx-deploy --replicas=3
+k get pods #check how many replicas created, if there is some issue goto next step
+kubectl get pods -n kube-system  #check issues in all pods, if any issue resolve it, lets say kube-controller pod is not working
+
+sed -i 's/kube-contro1ler-manager/kube-controller-manager/g' /etc/kubernetes/manifests/kube-controller-manager.yaml
+
