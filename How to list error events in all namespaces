@@ -1,0 +1,5 @@
+Question:
+Generate a list of events from all namespaces containing the word error in any case, in a reverse chronological order.
+
+Answer:
+kubectl get events -A --sort-by='.lastTimestamp' | grep -i error | tac
