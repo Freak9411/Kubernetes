@@ -1,0 +1,30 @@
+Question:
+There is ServiceAccount secret-reader in Namespace project-swan. Create a Pod of image nginx:1-alpine named api-contact which uses this ServiceAccount. Exec into the Pod and use curl to manually query all Secrets from the Kubernetes Api. Write the result into file /opt/course/9/result.json.
+
+Answer:
+k run api-contact --image=nginx:1-alpine --dry-run=client -o yaml > pod.yaml
+vi pod.yaml
+--------------------------------------------------------------------------------
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: api-contact
+  name: api-contact
+  namespace: project-swan             # add
+spec:
+  serviceAccountName: secret-reader   # add
+  containers:
+  - image: nginx:1-alpine
+    name: api-contact
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
+-------------------------------------------------------------------------------------------------------
+k create -f pod.yaml
+k exec api-contact -n project-swan -it -- sh
+# curl https://kubernetes.default
+# TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+# curl -k https://kubernetes.default/api/v1/secrets -H "Authorization: Bearer ${TOKEN}"
