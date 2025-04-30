@@ -1,0 +1,48 @@
+Question:
+The CoreDNS configuration in the cluster needs to be updated:
+Make a backup of the existing configuration Yaml. You should be able to fast recover from the backup
+Update the CoreDNS configuration in the cluster so that DNS resolution for SERVICE.NAMESPACE.custom-domain will work exactly like and in addition to SERVICE.NAMESPACE.cluster.local
+ 
+Answer:
+k -n kube-system get cm
+k -n kube-system get cm coredns -o yaml
+---------------------------------------------------------------------------------------------------------------------------------
+apiVersion: v1
+data:
+  Corefile: |
+    .:53 {
+        errors
+        health {
+           lameduck 5s
+        }
+        ready
+        kubernetes cluster.local in-addr.arpa ip6.arpa {
+           pods insecure
+           fallthrough in-addr.arpa ip6.arpa
+           ttl 30
+        }
+        prometheus :9153
+        forward . /etc/resolv.conf {
+           max_concurrent 1000
+        }
+        cache 30 {
+           disable success cluster.local
+           disable denial cluster.local
+        }
+        loop
+        reload
+        loadbalance
+    }
+kind: ConfigMap
+metadata:
+  name: coredns
+  namespace: kube-system
+----------------------------------------------------------------------------------------------------------------------------------------------------
+k -n kube-system edit cm coredns
+------------------------------------------------------------------------------------------------------------------------------------------------------
+...
+        ready
+        kubernetes custom-domain cluster.local in-addr.arpa ip6.arpa {     #added custom-domain in line
+...
+k -n kube-system rollout restart deploy coredns
+k exec -it test-pod -- sh nslookup kubernetes.default.svc.custom-domain    #to test with test-pod
