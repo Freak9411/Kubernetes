@@ -1,0 +1,8 @@
+Question:
+ Install the cri-docker_0.3.16.3-0.debian.deb package located in /root and ensure that the cri-docker service is running and enabled to start on boot.
+
+Answer:
+dpkg -i /root/cri-docker_0.3.16.3-0.debian.deb   #check for container package
+systemctl start cri-docker
+systemctl enable cri-docker
+systemctl is-enabled cri-docker
