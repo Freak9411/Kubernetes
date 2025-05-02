@@ -1,0 +1,7 @@
+Question:
+Kubectl is not working. Troubleshoot.
+
+Answer:
+ps aux #for kube processes
+systemctl status kubelet
+systemctl start kubelet #if kubelet is not active
