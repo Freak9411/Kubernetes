@@ -1,0 +1,29 @@
+Question:
+Create a Static Pod named my-static-pod in Namespace default on the controlplane node. It should be of image nginx:1-alpine and have resource requests for 10m CPU and 20Mi memory. Create a NodePort Service named static-pod-service which exposes that static Pod on port 80 .
+
+Answer:
+cd /etc/kubernetes/manifests/
+k run my-static-pod --image=nginx:1-alpine -o yaml --dry-run=client > my-static-pod.yaml
+----------------------------------------------------------------------------------------------------------
+apiVersion: v1
+kind: Pod
+metadata:
+creationTimestamp: null
+labels:
+run: my-static-pod
+name: my-static-pod
+spec:
+containers:
+- image: nginx:1-alpine
+name: my-static-pod
+resources:
+requests:
+cpu: 10m  #add
+memory: 20Mi   #add
+dnsPolicy: ClusterFirst
+restartPolicy: Always
+status: {}
+-------------------------------------------------------------------------------------------------------------------------
+k expose pod my-static-pod-cka2560 --name static-pod-service --type=NodePort --port 80
+k get svc,ep -l run=my-static-pod #lets suppose service NodePort be 32000
+curl 192.168.100.31:32000 #test connectivity
