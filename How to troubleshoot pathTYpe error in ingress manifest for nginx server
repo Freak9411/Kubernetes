@@ -1,0 +1,44 @@
+Question:
+Error showing "ingress contains invalid paths: path /ddis/openapi.json cannot be used with pathType Exact" error while forming ingress manifest
+------------------------------------------------------------------------------------------------------------------------------------------------
+Error: unable to generate manifests: cannot patch "data-import-service-docs-openapi-ing" with kind Ingress: admission webhook "validate.nginx.ingress.kubernetes.io" denied the request: ingress contains invalid paths: path /ddis/openapi.json cannot be used with pathType Exact
+
+Answer:
+-------------------------------------------------------------------------------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    meta.helm.sh/release-name: data-import-service
+    meta.helm.sh/release-namespace: my-service
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /openapi.json
+  creationTimestamp: "2025-04-23T13:10:17Z"
+  generation: 2
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    common.k8s.my-service.com/name: data-import-service-docs-openapi-ing
+    common.k8s.my-service.com/part-of: platform
+    common.k8s.my-service.com/responsible-party: syseng
+    platform.k8s.my-service.com/component: core
+  name: data-import-service-docs-openapi-ing
+  namespace: my-service
+  resourceVersion: "1631817"
+  uid: ff9270d5-be9f-4e50-a136-54a9c9f53510
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      - backend:
+          service:
+            name: data-import-service-svc
+            port:
+              number: 8080
+        path: /ddis/openapi.json
+        pathType: ImplementationSpecific  #change pathTYpe from 'Exact' to 'ImplementationSpecific'
+status:
+  loadBalancer:
+    ingress:
+    - ip: 10.XX.X.XXX
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
