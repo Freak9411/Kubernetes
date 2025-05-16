@@ -1,0 +1,59 @@
+Question:
+The deploy Deployment was scaled to 2 replicas; however, the current replica count is still 1.Troubleshoot and fix this issue. Make sure the CURRENT count is equal to the DESIRED count.
+
+Answer:
+
+k get pods
+------------------------------------------------------------
+NAME                                   READY   STATUS    RESTARTS   AGE
+deploy-7xcf-rdhs-gcgh  1/1     Running   0          26s
+--------------------------------------------------------------------------------
+
+k describe deployment deploy
+------------------------------------------------------------
+NAME                                   READY   STATUS    RESTARTS   AGE
+deploy-7xcf-rdhs-gcgh  1/1     Running   0          26s
+-------------------------------------------------------------
+Replicas:               2 desired | 1 updated | 1 total | 0 available | 1 unavailable    #observed in output
+--------------------------------------------------------------
+
+k get pods -n kube-system
+--------------------------------------------------------------
+kube-controller-manager-cluster-controlplane   0/1     CrashLoopBackOff   5 (55s ago)   3m58s   #observed controller-manager pod in error state
+--------------------------------------------------------------
+
+k describe pod kube-controller-manager-cluster-controlplane -n kube-system
+---------------------------------------------------------------
+State:          Waiting
+      Reason:       CrashLoopBackOff
+    Last State:     Terminated
+      Reason:       StartError
+      Message:      failed to create containerd task: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: exec: "kube-controller-manage": executable file not found in $PATH: unknown
+---------------------------------------------------------------
+
+cat /etc/kubernetes/manifests/kube-contoller-manager.yaml
+---------------------------------------------------------------
+spec:
+  containers:
+  - command:
+    - kube-controller-manage #errorred line
+---------------------------------------------------------------
+
+mv /etc/kubernetes/manifests/kube-contoller-manager.yaml /etc/kubernetes
+
+vi /etc/kubernetes/kube-contoller-manager.yaml
+--------------------------------------------------------------
+spec:
+  containers:
+  - command:
+    - kube-controller-manager #corrected line
+-------------------------------------------------------------
+
+mv /etc/kubernetes/kube-contoller-manager.yaml /etc/kubernetes/manifests/
+
+k get pods
+-------------------------------------------------------------
+NAME                                   READY   STATUS    RESTARTS   AGE
+deploy-7xcf-rdhs-gcgh  1/1     Running   0          26s
+deploy-8xcg-mnhs-vadg  1/1     Running   0          25s
+--------------------------------------------------------------
